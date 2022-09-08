@@ -13,7 +13,6 @@ debug_string: .space 81
 entry:
 	addiu   sp, sp, -4      # 4 Bytes auf dem Stack reservieren (Stack Pointer verschieben)                 GET INPUT
         sw      ra, 0(sp)               # Rücksprungadresse auf Stack legen
-	j start
 
 	la a0, prompt_input
 	jal writestring
@@ -23,10 +22,10 @@ entry:
 
 	la s0, input_string
 	la s1, debug_string
-	la s3, $zero		# counts character occurrences
+	la s3, $0		# counts character occurrences
 	li s4, 10		# constant
 	li s5, 48		# lower bound ascii number
-  li s6, 57   # upper bound ascii number
+  	li s6, 57   # upper bound ascii number
 	
 	
 loop_read: 
@@ -43,7 +42,7 @@ loop_read:
 	j loop_read
 handle_char:
 	beq s3, $0, loop_read		# counted down to zero, return
-	sb a0 , s1
+	lb a0, 0(s1)
 	addi s1, 1	
 	addi s3, -1
 	j handle_char
@@ -61,7 +60,7 @@ loop_read_end:			# END LOOP
 	jal writestring
 constrict:
 	la s1, debug_string
-	la s3, $zero
+	la s3, zero
 	lb t0, 0(s1)
 loop_constrict:
 	addi s1, 1
@@ -69,12 +68,12 @@ loop_constrict:
 	bne t0, t1, constrict_print
 	addi s3, 1
 constrict_print:
-	lb a0, s3
+	lb a0, 0(s3)
 	jal writedec
-	lb a0, t0
+	lb a0, 0(t0)
 	jal writechar
-	la s3, $zero	# move variables
-	lb t0, t1
+	la s3, zero	# move variables
+	lb t0, 0(t1)
 	j loop_constrict
 
 end:
