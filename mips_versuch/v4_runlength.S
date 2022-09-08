@@ -22,7 +22,7 @@ entry:
 
 	la s0, input_string
 	la s1, debug_string
-	la s3, $0		# counts character occurrences
+	li s3, 0		# counts character occurrences
 	li s4, 10		# constant
 	li s5, 48		# lower bound ascii number
   	li s6, 57   # upper bound ascii number
@@ -31,7 +31,7 @@ entry:
 loop_read: 
 	lb a0, 0(s0)			# load string with offset
 	beq a0, $0, loop_read_end	# end if reached null-termination of string
-
+	jal writechar			# DEBUG
 	blt a0, s5 , handle_char
 	bgt a0, s6, handle_char		# is only a number if 0<x<10
 	addi s0, s0, 1			# move pointer in input_string
@@ -42,12 +42,13 @@ loop_read:
 	j loop_read
 handle_char:
 	beq s3, $0, loop_read		# counted down to zero, return
-	lb a0, 0(s1)
-	addi s1, 1	
-	addi s3, -1
+	lb s1, 0(a0)
+	addi s1, 1			# move pointer in debug_string	
+	addi s3, -1			# count down runlength
 	j handle_char
 	
 loop_read_end:			# END LOOP
+	jal writecrlf
 	la a0, prompt_debug
 	jal writestring
 	la a0, debug_string
@@ -60,7 +61,7 @@ loop_read_end:			# END LOOP
 	jal writestring
 constrict:
 	la s1, debug_string
-	la s3, zero
+	li s3, 0
 	lb t0, 0(s1)
 loop_constrict:
 	addi s1, 1
@@ -72,7 +73,7 @@ constrict_print:
 	jal writedec
 	lb a0, 0(t0)
 	jal writechar
-	la s3, zero	# move variables
+	li s3, 0	# move variables
 	lb t0, 0(t1)
 	j loop_constrict
 
