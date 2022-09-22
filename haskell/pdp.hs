@@ -1,3 +1,29 @@
+listInt = [1,2,3]
+listChar = "HalloDiesIstEinTestABC"
+listList = [[1,2,3],[4,5,6],[7,8,9]]
+
+double = map (\x -> 2*x)
+
+evenDouble = map (\x -> if x `mod` 2 == 0 then x*2 else x)
+
+sum' :: Num a => [a] -> a
+sum' xs= foldl (+) 0 xs
+
+concat' :: [[a]] -> [a]
+concat' = foldl (++) []
+
+quadratsumme :: (Num a, Enum a) => a -> a
+quadratsumme n = foldl (+) 0 [x*x|x <- [1..n]]
+
+reverse' :: [a] -> [a]
+reverse' = foldl (\acc x ->  x: acc ) []
+
+reverse'' :: [a] -> [a]
+reverse'' = foldr (\x ini -> ini ++ [x] )  [] 
+
+minmax :: (Ord a)=> [a]-> (a,a)
+minmax (x:xs) = foldl (\ (a,b) x -> (min a x, max b x)) (x,x) xs
+
 zip' :: [a] -> [b] -> [(a,b)]
 zip' _  [] = []
 zip' [] _ = []
