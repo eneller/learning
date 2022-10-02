@@ -12,7 +12,7 @@ debug_string: .space 81
 	.globl entry
 entry:
 	addiu   sp, sp, -4      # 4 Bytes auf dem Stack reservieren (Stack Pointer verschieben)                 GET INPUT
-        sw      ra, 0(sp)               # Rücksprungadresse auf Stack legen
+  sw      ra, 0(sp)               # Rücksprungadresse auf Stack legen
 
 	la a0, prompt_input
 	jal writestring
@@ -25,7 +25,7 @@ entry:
 	li s3, 0		# counts character occurrences
 	li s4, 10		# constant
 	li s5, 48		# lower bound ascii number
-  	li s6, 57   # upper bound ascii number
+ 	li s6, 57   # upper bound ascii number
 	
 	
 loop_read: 

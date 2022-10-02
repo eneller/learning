@@ -1,3 +1,7 @@
+# TODO attempt to make an automatic run
+run %.rom: %.rom
+	./vmips $@
+
 %.rom:	%.temp
 	dd if=$< of=$@ bs=4096 conv=sync
 
@@ -24,3 +28,4 @@
 
 clean:	
 	rm -f *.o *.rom *.ecof *.temp
+

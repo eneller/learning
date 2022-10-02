@@ -12,6 +12,14 @@ sum' xs= foldl (+) 0 xs
 concat' :: [[a]] -> [a]
 concat' = foldl (++) []
 
+fliptuples :: [(a,b)] -> [(b,a)]
+fliptuples = map (\ (a,b) -> (b,a))
+
+rotate :: (Num b, Eq b) => b -> [a] -> [a]
+rotate 0 ls = ls
+rotate _ [] = []
+rotate r (x:xs) = rotate (r-1) (xs++[x])
+
 quadratsumme :: (Num a, Enum a) => a -> a
 quadratsumme n = foldl (+) 0 [x*x|x <- [1..n]]
 
@@ -53,23 +61,26 @@ safeHead' (x:xs) = Right x
 -- algebraic data types
 data Alter = Kind | Jugendlich | Erwachsen | Alt | Tot deriving (Enum, Eq, Show)
 data LFarbe = Rot | Gruen | Blau | Gelb deriving (Enum, Eq, Show)
-data Mensch = Name String Alter LFarbe 
--- equiv to type Name = String
+data Mensch = Mensch String Alter LFarbe deriving (Show)
+-- first Mensch is type name, second is constructor name
 data Stammbaum = Knoten Mensch Mensch [Stammbaum] | Blatt Mensch
 names :: Stammbaum -> [String]
-names (Knoten (Name n1 _ _) (Name n2 _ _) ls ) =  n1 : n2 : concat (map names ls ) 
-names (Blatt (Name n a _)) = if (a /= Tot) then [n] else []
+names (Knoten (Mensch n1 _ _) (Mensch n2 _ _) ls ) =  n1 : n2 : concat (map names ls ) 
+names (Blatt (Mensch n a _)) = if (a /= Tot) then [n] else []
 
+getMensch :: Stammbaum -> [Mensch]
+getMensch (Blatt m) = [m]
+getMensch (Knoten m1 m2 ls) = m1:m2:concat(map getMensch ls)
 
-familie = Knoten (Name "Alice" Erwachsen Rot) (Name "Bob" Erwachsen Gruen) 
+familie = Knoten (Mensch "Alice" Erwachsen Rot) (Mensch "Bob" Erwachsen Gruen) 
           [     
-                Knoten (Name "Dave" Erwachsen Gruen) (Name "Eve" Erwachsen Blau) 
+                Knoten (Mensch "Dave" Erwachsen Gruen) (Mensch "Eve" Erwachsen Blau) 
                 [
-                        Blatt (Name "Franz" Jugendlich Blau),
-                        Blatt (Name "Gabriella" Kind Gelb)
+                        Blatt (Mensch "Franz" Jugendlich Blau),
+                        Blatt (Mensch "Gabriella" Kind Gelb)
                 ],
-                Knoten (Name "Hanna" Erwachsen Gelb) (Name "Igor" Erwachsen Blau) [],
-                Blatt (Name "Jana" Tot Rot)
+                Knoten (Mensch "Hanna" Erwachsen Gelb) (Mensch "Igor" Erwachsen Blau) [],
+                Blatt (Mensch "Jana" Tot Rot)
           ]
 
 
@@ -81,10 +92,43 @@ numElems :: Tree a -> Int
 numElems (Empty) = 0
 numElems (Node t1 _ t2) = 1 + numElems t1 + numElems t2
 
+foldTree :: (c) -> (c -> a -> c -> c) -> Tree a -> c 
+foldTree fe fn tree = m tree where m Empty = fe; m (Node r e l) = fn (m r) e (m l)
+
 sumTree :: (Num a)=> Tree a-> a
 sumTree (Empty) = 0
 sumTree (Node r a l) = a + sumTree r + sumTree l
 
-foldTree :: Tree a => (a-> 
-foldTree fe fn Empty = fe
-foldTree
+sumTree' :: (Num a)=> Tree a -> a
+sumTree' = foldTree (0) (\ right current left -> right + current +left)
+
+
+type Laenge = Int
+type MaxDurchfluss = Float
+type Adresse = String
+data Kanal = Anschluss Adresse MaxDurchfluss| Kanalstueck Laenge MaxDurchfluss [Kanal] deriving (Eq, Show)
+
+kanal =  Kanalstueck 200 2.5 [
+                (Kanalstueck 100 1.4 [
+                    (Anschluss "Karlstr. 14" 0.4),
+                    (Anschluss "Karlstr. 16" 0.4),
+                    (Anschluss "Karlstr. 18" 0.4)
+                ]),
+                (Kanalstueck 80 1.1 [
+                    (Anschluss "Karlstr./Keplerstr." 0.1),
+                    (Anschluss "Keplerstr. 34" 0.5),
+                    (Kanalstueck 100 0.5 [
+                        (Anschluss "Olgastr." 0.2),
+                        (Anschluss "Gymnasium" 0.3) ])
+                ])
+            ]
+
+foldKanal :: (Adresse -> MaxDurchfluss -> r) -> (Laenge -> MaxDurchfluss -> [r] -> r) -> Kanal-> r
+foldKanal fa fk kanal = m kanal where m (Anschluss adr durchf) = fa adr durchf
+                                      m (Kanalstueck len durchf ls) = fk len durchf (map m ls)
+
+kanallaenge :: Kanal -> Laenge
+kanallaenge ( Anschluss _ _)= 0
+kanallaenge (Kanalstueck len _ ls) = len + sum(map kanallaenge ls)
+kanallaenge' :: Kanal -> Laenge
+kanallaenge' = foldKanal (\_ _ ->0) (\ len _ ls -> len + (sum ls))

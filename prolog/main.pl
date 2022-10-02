@@ -1,3 +1,4 @@
+% GENERATE AND TEST
 % 4 positions allowed
 % Alice, Bob, Charlie und Eve besuchen gemeinsam ein Tutorium. Alice
 % und Bob sitzen direkt neben Eve, Bob sitzt rechts von Alice, aber links von Charlie.
