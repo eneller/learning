@@ -6,7 +6,6 @@ prompt_debug:	.asciiz	"Debug: "
 prompt_result:	.asciiz "Result: "
 input_string: .space 81
 debug_string: .space 81
-
 	.text
 	.globl entry
 entry:
@@ -17,10 +16,10 @@ entry:
 	jal writestring
 
 	la a0, input_string	# get input string
-	jal readline
-	la v0, debug_string	
+	jal readline	
 	la s0, input_string
 	la s1, debug_string
+	#la s2, result_string
 	li s3, 0		# counts character occurrences
 	li s4, 10		# constant
 	li s5, 48		# lower bound ascii number
@@ -29,8 +28,7 @@ entry:
 	
 loop_read: 
 	lb a0, 0(s0)			# load string with offset
-	beq a0, $0, loop_read_end	# end if reached null-termination of string
-	jal writechar			# DEBUG
+	beq a0, $0, start_encode	# end if reached null-termination of string
 
 	
 	blt a0, s5, handle_char
@@ -62,38 +60,46 @@ handle_char:
 	
 move_char_pointer:
 	addi s0, s0, 1
-	li v0, -1
 	j loop_read
-loop_read_end:			# END LOOP
+
+start_encode:
+	la s1, debug_string
 	jal writecrlf
 
-	la a0, prompt_debug
-	jal writestring
-	la a0, debug_string
-	jal writestring
-	jal writecrlf
-
+        la a0, prompt_debug
+        jal writestring
+        la a0, debug_string
+        jal writestring
+        jal writecrlf
 	la a0, prompt_result
-	jal writestring
+        jal writestring
 
-constrict:
-	la s0, debug_string
-	li s1, 0		#counter for character occurrences
-	lb s2, 0(s1)		# store current character
-loop_constrict:
-	addi s0, 1
-	lb s3, 0(s0)		# newest character in this register
-	beq s3, 0, end
-	bne s2, s3, constrict_print
-	addi s1, 1
-constrict_print:
-	lb a0, 0(s1)
+	lb a0, 0(s1) 
+
+	li s3, 0 	#current letter
+	li s5, 0	#counter
+	add s3, a0	
+	
+encode:
+	beq a0, s3, move_debug_pointer
+	move a0, s5
 	jal writedec
-	lb a0, 0(s2)
+	move a0,s3
 	jal writechar
-	li s1, 0	# reset counter
-	move s2, s3
-	j loop_constrict
+	addi s1, 1
+	li s5, 1
+	li s3, 0
+	lb a0, 0(s1)
+	beq a0, $0, end
+	add s3, a0
+	j encode
+move_debug_pointer:
+	addi s1, 1
+	addi s5, 1
+	lb a0, 0(s1)
+	j encode	
+	
+	
 
 end:
         jal writecrlf           #Zeilenumbruch
